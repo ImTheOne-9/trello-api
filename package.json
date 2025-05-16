@@ -1,0 +1,13 @@
+{
+  "name": "trello-api",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Trello Web Mern Stack",
+  "main": "src/server.js",
+  "author": "Viet Hoang",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
