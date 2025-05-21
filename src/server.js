@@ -1,18 +1,20 @@
 /* eslint-disable no-console */
 import express from 'express'
 import exitHook from 'async-exit-hook'
-import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb'
+import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
 import { env } from '~/config/environment'
+import { APIs_V1 } from '~/routes/v1/index'
 
 const START_SERVER = () => {
   const app = express()
 
+  //Enable req.bode json data
+  app.use(express.json())
+
   const hostname = env.APP_HOST
   const port = env.APP_PORT
 
-  app.get('/', async (req, res) => {
-    res.end('<h1>Hello World!</h1><hr>')
-  })
+  app.use('/v1', APIs_V1)
 
   app.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
@@ -28,7 +30,7 @@ const START_SERVER = () => {
 }
 // Chi khi connect toi database thanh cong moi Start Server Back-end len
 // IIFE
-( async () => {
+(async () => {
   try {
     console.log('Connecting to MongoDb Cloud Atlas!')
     await CONNECT_DB()
@@ -39,4 +41,3 @@ const START_SERVER = () => {
     process.exit(0)
   }
 })()
-
