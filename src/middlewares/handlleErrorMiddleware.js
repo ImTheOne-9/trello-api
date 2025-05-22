@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 import { StatusCodes } from 'http-status-codes'
-
+import { env } from '~/config/environment'
 export const handleErrorMiddleware = (err, req, res, next) => {
   if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
 
@@ -11,7 +11,7 @@ export const handleErrorMiddleware = (err, req, res, next) => {
     stack: err.stack
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (env.BUILD_MODE !== 'development') {
     delete responseError.stack
   }
 
