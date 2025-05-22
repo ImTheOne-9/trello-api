@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
-
+import ApiError from '~/utils/ApiError'
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
@@ -24,11 +24,7 @@ const createNew = async (req, res, next) => {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
   } catch (error) {
-    const errorDetails = error?.details?.map(err => err.message) || ['Validation failed']
-    console.log('Error: ', errorDetails)
-    res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      error: errorDetails
-    })
+    next(new ApiError(new Error(error).message, StatusCodes.UNPROCESSABLE_ENTITY))
   }
 }
 

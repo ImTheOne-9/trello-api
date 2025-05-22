@@ -4,7 +4,7 @@ import exitHook from 'async-exit-hook'
 import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
 import { env } from '~/config/environment'
 import { APIs_V1 } from '~/routes/v1/index'
-
+import { handleErrorMiddleware } from '~/middlewares/handlleErrorMiddleware'
 const START_SERVER = () => {
   const app = express()
 
@@ -15,6 +15,8 @@ const START_SERVER = () => {
   const port = env.APP_PORT
 
   app.use('/v1', APIs_V1)
+
+  app.use(handleErrorMiddleware)
 
   app.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
