@@ -22,7 +22,7 @@ export const CONNECT_DB = async () => {
   // Connect the client to the server
   await mongoClientInstance.connect()
 
-  // Sau khi connect thi lay database theo ten va gan nguoc no vao trelloDatabaseInstance 
+  // Sau khi connect thi lay database theo ten va gan nguoc no vao trelloDatabaseInstance
   trelloDatabaseInstance = mongoClientInstance.db(DATABASE_NAME)
 }
 
