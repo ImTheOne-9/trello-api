@@ -28,7 +28,7 @@ const createNew = async (reqBody) => {
 const getDetails = async (boardId) => {
   try {
     const board = await boardModel.getDetails(boardId)
-    if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Not found board!')
+    if (!board) throw new ApiError('Not found board!', StatusCodes.NOT_FOUND)
 
     //Clone board
     const resBoard = cloneDeep(board)
