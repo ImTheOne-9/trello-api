@@ -17,6 +17,8 @@ const COLUMN_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+const INVALID_UPDATE_FIELDS = ['_id', 'createAt']
+
 const validateBeforeCreate = async (data) => {
   return await COLUMN_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
@@ -54,10 +56,44 @@ const pushCardToCardOrderIds = async (card) => {
     throw new Error(error)
   }
 }
+
+const update = async (columnId, updateData) => {
+  try {
+    Object.keys(updateData).forEach(fieldname => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldname))
+        delete updateData[fieldname]
+    })
+
+    if (updateData.cardOrderIds)
+      updateData.cardOrderIds = updateData.cardOrderIds.map(_id => new ObjectId(_id))
+
+    const updatedColumn = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(columnId) },
+      { $set: updateData },
+      { returnDocument: 'after' }
+    )
+
+    return updatedColumn
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const deleteOneById = async (columnId) => {
+  try {
+    const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne({ _id: new ObjectId(columnId) })
+    console.log('delete column: ', result)
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  pushCardToCardOrderIds
+  pushCardToCardOrderIds,
+  update,
+  deleteOneById
 }
