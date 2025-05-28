@@ -11,6 +11,18 @@ const createNew = async (req, res, next) => {
   }
 }
 
+const update = async (req, res, next) => {
+  try {
+    // Dieu huong sang tang Service
+    const boardId = req.params.id
+    const updatedBoard = await boardService.update(boardId, req.body)
+    // Co ket qua thi tra ve phia client
+    res.status(StatusCodes.CREATED).json(updatedBoard)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getDetails = async (req, res, next) => {
   try {
     const boardId = req.params.id
@@ -21,7 +33,20 @@ const getDetails = async (req, res, next) => {
     next(error)
   }
 }
+
+const moveCardInDifferentColumn = async (req, res, next) => {
+  try {
+    const updatedBoard = await boardService.moveCardInDifferentColumn(req.body)
+    // Co ket qua thi tra ve phia client
+    res.status(StatusCodes.CREATED).json(updatedBoard)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const boardController = {
   createNew,
-  getDetails
+  getDetails,
+  update,
+  moveCardInDifferentColumn
 }

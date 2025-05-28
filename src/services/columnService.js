@@ -2,6 +2,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 import { boardModel } from '~/models/boardModel'
+import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import ApiError from '~/utils/ApiError'
 import { slugify } from '~/utils/slugToString'
@@ -31,6 +32,36 @@ const createNew = async (reqBody) => {
   }
 }
 
+const update = async (columnId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updateAt: Date.now()
+    }
+
+    const updatedColumn = await columnModel.update(columnId, updateData)
+    return updatedColumn
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteItem = async (columnId) => {
+  try {
+    const targetColumn = await columnModel.findOneById(columnId)
+    console.log(targetColumn)
+    // Delete Column
+    await columnModel.deleteOneById(columnId)
+    // Delete cards of deleted column
+    await cardModel.deleteCardsByColumnId(columnId)
+    await boardModel.pullColumnFromColumnOrderIds(targetColumn)
+    return { deleteResult: 'This Column is deleted successfully' }
+  } catch (error) {
+    throw error
+  }
+}
 export const columnService = {
-  createNew
+  createNew,
+  update,
+  deleteItem
 }
