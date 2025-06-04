@@ -5,9 +5,10 @@ import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import ApiError from '~/utils/ApiError'
+import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { slugify } from '~/utils/slugToString'
 
-const createNew = async (reqBody) => {
+const createNew = async (userId, reqBody) => {
   try {
     const newBoard = {
       ...reqBody,
@@ -15,7 +16,7 @@ const createNew = async (reqBody) => {
     }
 
     // Goi den tang Model de xu ly luu newBoard vao database
-    const createdBoard = await boardModel.createNew(newBoard)
+    const createdBoard = await boardModel.createNew(userId, newBoard)
 
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
     // Ban email, notification ve cho admin khi co 1 card moi duoc tao
@@ -27,9 +28,9 @@ const createNew = async (reqBody) => {
   }
 }
 
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
   try {
-    const board = await boardModel.getDetails(boardId)
+    const board = await boardModel.getDetails(userId, boardId)
     if (!board) throw new ApiError('Not found board!', StatusCodes.NOT_FOUND)
 
     //Clone board
@@ -83,9 +84,18 @@ const moveCardInDifferentColumn = async (reqBody) => {
   }
 }
 
+const getBoards = async(userId, page, itemPerPage) => {
+  if (!page) page = DEFAULT_PAGE
+  if (!itemPerPage) itemPerPage = DEFAULT_ITEMS_PER_PAGE
+
+  const result = await boardModel.getBoards(userId, parseInt(page, 10), parseInt(itemPerPage, 10))
+  return result
+}
+
 export const boardService = {
   createNew,
   getDetails,
   update,
-  moveCardInDifferentColumn
+  moveCardInDifferentColumn,
+  getBoards
 }
