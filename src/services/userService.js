@@ -11,6 +11,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { BrevoProvider } from '~/providers/BrevoProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 
 const createNew = async (reqBody) => {
   try {
@@ -141,9 +142,50 @@ const refreshToken = async (clientRefreshToken) => {
   }
 }
 
+const update = async (userId, reqBody, userAvatarFile) => {
+  try {
+    const existUser = await userModel.findOneById(userId)
+    console.log(existUser)
+    if (!existUser) { throw new ApiError('Account not found', StatusCodes.NOT_FOUND) }
+    if (!existUser.isActive) { throw new ApiError('Your account is not active', StatusCodes.NOT_ACCEPTABLE) }
+
+    let updatedUser = {}
+    // case 1
+    if (reqBody.current_password && reqBody.new_password) {
+      if (!bcrypt.compareSync(reqBody.current_password, existUser.password)) {
+        throw new ApiError('Current password is incorrect', StatusCodes.NOT_ACCEPTABLE)
+      }
+
+      updatedUser = await userModel.update(existUser._id, {
+        password: bcrypt.hashSync(reqBody.new_password, 8),
+        updateAt: Date.now()
+      })
+    } else if (userAvatarFile) {
+      // case upload file to Cloudinary
+      const uploadResult = await CloudinaryProvider.streamUpload(userAvatarFile.buffer, 'users')
+      console.log(uploadResult)
+
+      // Luu lai url cua file anh vao db
+      updatedUser = await userModel.update(existUser._id, {
+        avatar: uploadResult.secure_url,
+        updateAt: Date.now()
+      })
+    } else {
+      //case 2
+      updatedUser = await userModel.update(existUser._id, {
+        ...reqBody,
+        updateAt: Date.now()
+      })
+    }
+    return pickUser(updatedUser)
+  } catch (error) {
+    throw error
+  }
+}
 export const userService = {
   createNew,
   verifyAccount,
   login,
-  refreshToken
+  refreshToken,
+  update
 }

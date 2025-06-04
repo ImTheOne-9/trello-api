@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { sampleSize } from 'lodash'
 import ms from 'ms'
+import { userModel } from '~/models/userModel'
 import { userService } from '~/services/userService'
 import ApiError from '~/utils/ApiError'
 const createNew = async (req, res, next) => {
@@ -78,10 +79,24 @@ const logout = async (req, res, next) => {
     next(error)
   }
 }
+
+const update = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const userAvatarFile = req.file
+    console.log(userAvatarFile)
+    // console.log(userId)
+    const updatedUser = await userService.update(userId, req.body, userAvatarFile)
+    res.status(StatusCodes.CREATED).json(updatedUser)
+  } catch (error) {
+    next(error)
+  }
+}
 export const userController = {
   createNew,
   verifyAccount,
   login,
   logout,
-  refreshToken
+  refreshToken,
+  update
 }

@@ -65,7 +65,7 @@ const update = async (userId, updateData) => {
       if (INVALID_UPDATE_FIELDS.includes(fieldname))
         delete updateData[fieldname]
     })
-
+    console.log(userId)
     const updatedUser = await GET_DB().collection(USER_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(userId) },
       { $set: updateData },
