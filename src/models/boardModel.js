@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { ObjectId, ReturnDocument } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
+import { pagingSkipValue } from '~/utils/algorithms'
 import { BOARD_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validate'
 
@@ -15,6 +16,9 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   type: Joi.string().valid(...Object.values(BOARD_TYPES)).required(),
 
   columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  ownerIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+
   createAt: Joi.date().timestamp('javascript').default(Date.now),
   updateAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -25,10 +29,14 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const newBoardToAdd = {
+      ...validData,
+      ownerIds: [new ObjectId(userId)]
+    }
+    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
   } catch (error) {
     throw new Error(error)
   }
@@ -42,15 +50,22 @@ const findOneById = async (id) => {
   }
 }
 
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
   try {
-    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
+    const queryCondition = [
+      { _id: new ObjectId(boardId) },
+      // Dieu kien 01: Board chua bi xoa
+      { _destroy: false },
+      // Dieu kien 2: userId phai thuoc ownerIds hoac memberids, su dung $all
       {
-        $match: {
-          _id: new ObjectId(boardId),
-          _destroy: false
-        }
-      },
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
+    ]
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryCondition } },
       {
         $lookup: {
           from: 'columns',
@@ -122,6 +137,52 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const getBoards = async (userId, page, itemPerPage) => {
+  try {
+    const queryCondition = [
+      // Dieu kien 01: Board chua bi xoa
+      { _destroy: false },
+      // Dieu kien 2: userId phai thuoc ownerIds hoac memberids, su dung $all
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
+    ]
+
+    const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
+      [
+        { $match: { $and: queryCondition } },
+        // sort title cua board theo A-Z
+        { $sort: { title: 1 } },
+        // Xu li nhieu luong trong 1 query
+        { $facet: {
+          // Luong 1: query boards
+          'queryBoards': [
+            // Bo qua so luong ban ghi cua nhung page truoc do
+            { $skip: pagingSkipValue(page, itemPerPage) },
+            // Gioi han toi da so luong ban ghi tra ve tren 1 page
+            { $limit: itemPerPage }
+          ],
+          // Luong 2: query dem tong so luong ban ghi board trong db tra ve vao bien countedBoards
+          'queryTotalBoards': [{ $count: 'countedBoards' }]
+        } }
+      ],
+      { collation: { locale: 'en' } }
+    ).toArray()
+
+    console.log('query: ', query)
+    const res = query[0]
+    return {
+      boards: res.queryBoards || [],
+      totalBoards: res.queryTotalBoards[0]?.countedBoards || 0
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -130,5 +191,6 @@ export const boardModel = {
   getDetails,
   pushColumnToColumnOrderIds,
   update,
-  pullColumnFromColumnOrderIds
+  pullColumnFromColumnOrderIds,
+  getBoards
 }

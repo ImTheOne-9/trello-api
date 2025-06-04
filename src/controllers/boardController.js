@@ -2,8 +2,9 @@ import { StatusCodes } from 'http-status-codes'
 import { boardService } from '~/services/boardService'
 const createNew = async (req, res, next) => {
   try {
+    const userId = req.jwtDecoded._id
     // Dieu huong sang tang Service
-    const createdBoard = await boardService.createNew(req.body)
+    const createdBoard = await boardService.createNew(userId, req.body)
     // Co ket qua thi tra ve phia client
     res.status(StatusCodes.CREATED).json(createdBoard)
   } catch (error) {
@@ -25,8 +26,9 @@ const update = async (req, res, next) => {
 
 const getDetails = async (req, res, next) => {
   try {
+    const userId = req.jwtDecoded._id
     const boardId = req.params.id
-    const board = await boardService.getDetails(boardId)
+    const board = await boardService.getDetails(userId, boardId)
 
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
@@ -44,9 +46,23 @@ const moveCardInDifferentColumn = async (req, res, next) => {
   }
 }
 
+const getBoards = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const { page, itemPerPage } = req.query
+    const result = await boardService.getBoards(userId, page, itemPerPage)
+    // Co ket qua thi tra ve phia client
+    res.status(StatusCodes.CREATED).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+
 export const boardController = {
   createNew,
   getDetails,
   update,
-  moveCardInDifferentColumn
+  moveCardInDifferentColumn,
+  getBoards
 }
