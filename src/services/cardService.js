@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 import ApiError from '~/utils/ApiError'
 import { slugify } from '~/utils/slugToString'
 
@@ -27,6 +28,31 @@ const createNew = async (reqBody) => {
   }
 }
 
+const update = async (cardId, reqBody, cardCoverFile) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updateAt: Date.now()
+    }
+
+    let updatedCard ={}
+
+    if (cardCoverFile) {
+      const uploadResult = await CloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
+      updatedCard = await cardModel.update(cardId, {
+        cover: uploadResult.secure_url,
+        updateAt: Date.now()
+      })
+    } else {
+      updatedCard = await cardModel.update(cardId, updateData)
+    }
+    return updatedCard
+  } catch (error) {
+    throw error
+  }
+}
+
 export const cardService = {
-  createNew
+  createNew,
+  update
 }
