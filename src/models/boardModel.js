@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { ObjectId, ReturnDocument } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { pagingSkipValue } from '~/utils/algorithms'
 import { BOARD_TYPES } from '~/utils/constants'
@@ -158,6 +158,7 @@ const update = async (boardId, updateData) => {
   }
 }
 
+
 const getBoards = async (userId, page, itemPerPage) => {
   try {
     const queryCondition = [
@@ -193,12 +194,24 @@ const getBoards = async (userId, page, itemPerPage) => {
       { collation: { locale: 'en' } }
     ).toArray()
 
-    console.log('query: ', query)
     const res = query[0]
     return {
       boards: res.queryBoards || [],
       totalBoards: res.queryTotalBoards[0]?.countedBoards || 0
     }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const pushMemberIds = async (boardId, userId) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      { $push: { memberIds: new ObjectId(userId) } },
+      { returnDocument: 'after' }
+    )
+    return result
   } catch (error) {
     throw new Error(error)
   }
@@ -213,5 +226,6 @@ export const boardModel = {
   pushColumnToColumnOrderIds,
   update,
   pullColumnFromColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMemberIds
 }
