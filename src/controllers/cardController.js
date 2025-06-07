@@ -13,10 +13,11 @@ const createNew = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
+    const userInfo = req.jwtDecoded
     const cardId = req.params.id
     const cardCoverFile = req.file
     // Dieu huong sang tang Service
-    const updatedCard = await cardService.update(cardId, req.body, cardCoverFile)
+    const updatedCard = await cardService.update(cardId, userInfo, req.body, cardCoverFile)
     // Co ket qua thi tra ve phia client
     res.status(StatusCodes.CREATED).json(updatedCard)
   } catch (error) {

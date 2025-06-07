@@ -8,6 +8,9 @@ import { APIs_V1 } from '~/routes/v1/index'
 import { handleErrorMiddleware } from '~/middlewares/handlleErrorMiddleware'
 import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
+import http from 'http'
+import socketIo from 'socket.io'
+import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
 const START_SERVER = () => {
   const app = express()
 
@@ -31,7 +34,16 @@ const START_SERVER = () => {
 
   app.use(handleErrorMiddleware)
 
-  app.listen(port, hostname, () => {
+  const server = http.createServer(app)
+
+  // Khoi tao bien io vsverver va cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    //Lang nghe su kien client emit len
+    inviteUserToBoardSocket(socket)
+  })
+
+  server.listen(port, hostname, () => {
     // eslint-disable-next-line no-console
     console.log(`Hello ${env.AUTHOR}, I am running at http://${hostname}:${port}/`)
   })

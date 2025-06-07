@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { StatusCodes } from 'http-status-codes'
+import { date } from 'joi'
 import { cloneDeep } from 'lodash'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
@@ -28,7 +29,7 @@ const createNew = async (reqBody) => {
   }
 }
 
-const update = async (cardId, reqBody, cardCoverFile) => {
+const update = async (cardId, userInfo, reqBody, cardCoverFile) => {
   try {
     const updateData = {
       ...reqBody,
@@ -43,7 +44,18 @@ const update = async (cardId, reqBody, cardCoverFile) => {
         cover: uploadResult.secure_url,
         updateAt: Date.now()
       })
-    } else {
+    } else if (updateData.commentToAdd) {
+      //Tao du lieu comment them vao db, can bo sung them nhung field can thiet
+      const commentData = {
+        ...updateData.commentToAdd,
+        commentedAt: Date.now(),
+        userId: userInfo._id,
+        userEmail: userInfo.email
+      }
+
+      updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+    }
+    else {
       updatedCard = await cardModel.update(cardId, updateData)
     }
     return updatedCard
