@@ -49,8 +49,9 @@ const moveCardInDifferentColumn = async (req, res, next) => {
 const getBoards = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
-    const { page, itemPerPage } = req.query
-    const result = await boardService.getBoards(userId, page, itemPerPage)
+    const { page, itemPerPage, q } = req.query
+    const queryFilters = q
+    const result = await boardService.getBoards(userId, page, itemPerPage, queryFilters)
     // Co ket qua thi tra ve phia client
     res.status(StatusCodes.CREATED).json(result)
   } catch (error) {

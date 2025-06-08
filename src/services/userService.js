@@ -117,9 +117,9 @@ const login = async (reqBody) => {
 const refreshToken = async (clientRefreshToken) => {
   try {
     // Giai ma refreshToken xem co hop le khong
-    console.log(clientRefreshToken)
+    // console.log(clientRefreshToken)
     const refreshTokenDecoded = await JwtProvider.verifyToken(clientRefreshToken, env.REFRESH_TOKEN_PRIVATE_KEY)
-    console.log('refreshTokenDecoded', refreshTokenDecoded)
+    // console.log('refreshTokenDecoded', refreshTokenDecoded)
     /** Neu moi thu ok thi bat dau tao Token dang nhap de tra ve cho phia FE */
     // Tao thong tin dinh kem trong JWT Token
     const userInfo = {
@@ -134,7 +134,7 @@ const refreshToken = async (clientRefreshToken) => {
       //5
       env.ACCESS_TOKEN_LIFE
     )
-    console.log(accessToken)
+    // console.log(accessToken)
     return { accessToken }
 
   } catch (error) {
@@ -145,7 +145,7 @@ const refreshToken = async (clientRefreshToken) => {
 const update = async (userId, reqBody, userAvatarFile) => {
   try {
     const existUser = await userModel.findOneById(userId)
-    console.log(existUser)
+    // console.log(existUser)
     if (!existUser) { throw new ApiError('Account not found', StatusCodes.NOT_FOUND) }
     if (!existUser.isActive) { throw new ApiError('Your account is not active', StatusCodes.NOT_ACCEPTABLE) }
 
@@ -163,7 +163,7 @@ const update = async (userId, reqBody, userAvatarFile) => {
     } else if (userAvatarFile) {
       // case upload file to Cloudinary
       const uploadResult = await CloudinaryProvider.streamUpload(userAvatarFile.buffer, 'users')
-      console.log(uploadResult)
+      // console.log(uploadResult)
 
       // Luu lai url cua file anh vao db
       updatedUser = await userModel.update(existUser._id, {

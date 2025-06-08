@@ -6,7 +6,7 @@ import { ALLOW_COMMON_FILE_TYPES, LIMIT_COMMON_FILE_SIZE } from '~/utils/validat
 // Function kiem tra loai file
 
 const customFileFilter = (req, file, cb) => {
-  console.log('multerfile: ', file)
+  // console.log('multerfile: ', file)
 
   // Doi voi multer kiem tra kieu file thi su dung mimetype
   if (!ALLOW_COMMON_FILE_TYPES.includes(file.mimetype)) {

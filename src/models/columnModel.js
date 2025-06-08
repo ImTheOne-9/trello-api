@@ -82,7 +82,7 @@ const update = async (columnId, updateData) => {
 const deleteOneById = async (columnId) => {
   try {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne({ _id: new ObjectId(columnId) })
-    console.log('delete column: ', result)
+    // console.log('delete column: ', result)
     return result
   } catch (error) {
     throw new Error(error)

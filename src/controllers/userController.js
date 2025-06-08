@@ -54,7 +54,7 @@ const login = async (req, res, next) => {
 const refreshToken = async (req, res, next) => {
   try {
     // Dieu huong sang tang Service
-    console.log('Refresh Token cookie:', req.cookies?.refreshToken)
+    // console.log('Refresh Token cookie:', req.cookies?.refreshToken)
     const result = await userService.refreshToken(req.cookies?.refreshToken)
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
@@ -84,7 +84,7 @@ const update = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
     const userAvatarFile = req.file
-    console.log(userAvatarFile)
+    // console.log(userAvatarFile)
     // console.log(userId)
     const updatedUser = await userService.update(userId, req.body, userAvatarFile)
     res.status(StatusCodes.CREATED).json(updatedUser)

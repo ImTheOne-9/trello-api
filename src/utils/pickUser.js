@@ -6,3 +6,4 @@ export const pickUser = (user) => {
     '_id', 'email', 'userName', 'displayName', 'avatar', 'role', 'isActive', 'createAt', 'updateAt'
   ])
 }
+
