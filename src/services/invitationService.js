@@ -63,7 +63,7 @@ const createNewBoardInvitation = async (reqBody, inviterId) => {
 const getInvitations = async (userId) => {
   try {
     const getInvitations = await invitationModel.findByUser(userId)
-    console.log(getInvitations)
+    // console.log(getInvitations)
 
     const resInvitations = getInvitations.map(i => ({
       ...i,

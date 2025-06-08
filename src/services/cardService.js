@@ -54,6 +54,9 @@ const update = async (cardId, userInfo, reqBody, cardCoverFile) => {
       }
 
       updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+    } else if (updateData.inComingMemberInfo) {
+      // Truong hop Add hoac Remove thanh vien ra khoi card
+      updatedCard = await cardModel.updateMember(cardId, updateData.inComingMemberInfo)
     }
     else {
       updatedCard = await cardModel.update(cardId, updateData)

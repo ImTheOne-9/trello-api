@@ -49,7 +49,7 @@ const update = async (columnId, reqBody) => {
 const deleteItem = async (columnId) => {
   try {
     const targetColumn = await columnModel.findOneById(columnId)
-    console.log(targetColumn)
+    // console.log(targetColumn)
     // Delete Column
     await columnModel.deleteOneById(columnId)
     // Delete cards of deleted column
